@@ -2,9 +2,6 @@
 Use One epoll to select which timer is expired.
 timerfd is impl in Kernel.
 
-# Install Boost
-sudo apt-get install libboost-dev libboost-test-dev
-
 # Compile
 g++ main.cpp timer_poll.cpp -lpthread
 
