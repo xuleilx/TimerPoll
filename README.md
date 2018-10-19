@@ -1,6 +1,6 @@
 # TimerPoll
 Use One epoll to select which timer is expired.
-timerfd is impl in Kernel.
+timerfd is impled in Kernel.
 
 # Compile
 g++ main.cpp timer_poll.cpp -lpthread
