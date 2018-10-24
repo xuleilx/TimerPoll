@@ -4,10 +4,11 @@
  */
 #include <cstdlib>
 #include <iostream>
-#include "timer_poll.h"
+#include "Timer.h"
+#include "TimersPoll.h"
 using namespace std;
 
-static timers_poll my_timers(128);
+static TimersPoll my_timers(128);
 
 class TestA{
 public:
@@ -30,12 +31,12 @@ public:
 	    printf("info: %d\n",n);
 	}
 	void send(int n){
-		pm_timer = new timer(1.10, std::bind(&TestA::info,this,n), 0);
+		pm_timer = new Timer(1.10, std::bind(&TestA::info,this,n), 0);
 	    my_timers.timers_poll_add_timer(*pm_timer);
 	}
 private:
 	int m_n;
-	timer *pm_timer;
+	Timer *pm_timer;
 };
 
 int callback(int n)
@@ -46,7 +47,7 @@ int callback(int n)
 
 void *thread_fun(void *data)
 {
-    timers_poll *my_timers = (timers_poll *)data;
+    TimersPoll *my_timers = (TimersPoll *)data;
     my_timers->loop();
 }
 /*
@@ -59,12 +60,12 @@ int main(int argc, char** argv)
     pthread_create(&thread_id, NULL, thread_fun, &my_timers);
  
     // 普通函数作为callback
-    timer timer1(1.05, std::bind(callback,1), 0);
+    Timer timer1(1.05, std::bind(callback,1), 0);
     my_timers.timers_poll_add_timer(timer1);
 
     // 类的成员函数作为callback
     TestA a;
-    timer timer2(1.10, std::bind(&TestA::info,&a,2), 0);
+    Timer timer2(1.10, std::bind(&TestA::info,&a,2), 0);
     my_timers.timers_poll_add_timer(timer2);
 
     // 类的成员函数中创建timer对象，并调用类的另一个成员函数
