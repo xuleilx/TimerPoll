@@ -18,79 +18,70 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <map>
+#include <functional>
 #define MAXFDS 128
 #define EVENTS 100
 class timer;
-typedef int(*timer_callback)(timer &);//user callback
-class timer
-{
+//typedef int (*timer_callback)(timer &); //user callback
+typedef std::function<void()> timer_callback;
+class timer {
 public:
-    timer() : timer_internal(0.0), cb(0), timer_id(0), repeat(0), userdata(0){}
-    timer(double internal_value, int  (*callback)(timer &ptimer), void *data, int rep) : timer_internal(internal_value), cb(callback), userdata(data), repeat(rep)
-    {
-        timer_id = timerfd_create(CLOCK_REALTIME, 0);
-        setNonBlock(timer_id);
-    }
-    timer(const timer &ptimer);
-    timer & operator=(const timer &ptimer);
-    int timer_start();
-    int timer_stop();
-    int timer_modify_internal(double timer_internal);
-    int timer_get_id()
-    {
-        return timer_id;
-    }
-    void *timer_get_userdata()
-    {
-        return userdata;
-    }
-    timer_callback get_user_callback()
-    {
-        return cb;
-    }
-    ~timer()
-    {
-        timer_stop();
-    }
+	timer() :
+			timer_internal(0.0), cb(0), timer_id(0), repeat(0){
+	}
+	timer(double internal_value, const timer_callback &callback,
+			int rep) :
+			timer_internal(internal_value), cb(callback), repeat(
+					rep) {
+		timer_id = timerfd_create(CLOCK_REALTIME, 0);
+		setNonBlock(timer_id);
+	}
+	timer(const timer &ptimer);
+	timer & operator=(const timer &ptimer);
+	int timer_start();
+	int timer_stop();
+	int timer_modify_internal(double timer_internal);
+	int timer_get_id() {
+		return timer_id;
+	}
+	void runCallback() const{
+		cb();
+	}
+	~timer() {
+		timer_stop();
+	}
 private:
-    bool setNonBlock (int fd)
-    {
-        int flags = fcntl (fd, F_GETFL, 0);
-        flags |= O_NONBLOCK;
-        if (-1 == fcntl (fd, F_SETFL, flags))
-        {
-            return false;
-        }
-        return true;
-    }
-    int     timer_id;
-    double  timer_internal;
-    void    *userdata;
-    bool    repeat;//will the timer repeat or only once
-    timer_callback cb;
-} ;
-class timers_poll
-{
+	bool setNonBlock(int fd) {
+		int flags = fcntl(fd, F_GETFL, 0);
+		flags |= O_NONBLOCK;
+		if (-1 == fcntl(fd, F_SETFL, flags)) {
+			return false;
+		}
+		return true;
+	}
+	int timer_id;
+	double timer_internal;
+	bool repeat; //will the timer repeat or only once
+	timer_callback cb;
+};
+class timers_poll {
 public:
-    timers_poll(int max_num=128)
-    {
-        active = 1;
-        epfd = epoll_create(max_num);
-    }
-    int timers_poll_add_timer(timer &ptimer);
-    int timers_poll_del_timer(timer &ptimer);
-    int run();
-    int timers_poll_deactive()
-    {
-        active = 0;
-    }
-    ~ timers_poll()
-    {
-    }
+	timers_poll(int max_num = 128) {
+		active = 1;
+		epfd = epoll_create(max_num);
+	}
+	int timers_poll_add_timer(timer &ptimer);
+	int timers_poll_del_timer(timer &ptimer);
+	int loop();
+	int timers_poll_deactive() {
+		active = 0;
+	}
+	~ timers_poll() {
+	}
 private:
-    int epfd;
-    int active;
-    std::map<int, timer> timers_map;
-    /* data */
-} ;
+	int epfd;
+	int active;
+	std::map<int, timer> timers_map;
+	/* data */
+};
 #endif /* TIMER_POLL_H */
