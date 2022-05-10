@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <sys/timerfd.h>
 #include <functional>
-#include <iostream>
 
 typedef std::function<void()> timer_callback;
 
