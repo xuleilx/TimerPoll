@@ -31,8 +31,8 @@ public:
 	    printf("info: %d\n",n);
 	}
 	void send(int n){
-		pm_timer = new Timer(1.10, std::bind(&TestA::info,this,n), 0);
-	    my_timers.timers_poll_add_timer(*pm_timer);
+		pm_timer = new Timer(3.10, std::bind(&TestA::info,this,n), 0);
+	    my_timers.timers_poll_add_timer(pm_timer);
 	}
 private:
 	int m_n;
@@ -61,12 +61,12 @@ int main(int argc, char** argv)
  
     // 普通函数作为callback
     Timer timer1(1.05, std::bind(callback,1), 0);
-    my_timers.timers_poll_add_timer(timer1);
+    my_timers.timers_poll_add_timer(&timer1);
 
     // 类的成员函数作为callback
     TestA a;
-    Timer timer2(1.10, std::bind(&TestA::info,&a,2), 0);
-    my_timers.timers_poll_add_timer(timer2);
+    Timer timer2(1.10, std::bind(&TestA::info,&a,2), true);
+    my_timers.timers_poll_add_timer(&timer2);
 
     // 类的成员函数中创建timer对象，并调用类的另一个成员函数
     a.send(3);
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     cout<<"modify complete"<<endl;
 
     // 删除定时器
-    my_timers.timers_poll_del_timer(timer2);
+    my_timers.timers_poll_del_timer(&timer2);
     cout<<"del complete"<<endl;
 
     sleep(4);

@@ -38,12 +38,18 @@ int Timer::timer_start() {
 	return 0;
 }
 int Timer::timer_stop() {
-	close(timer_id);
-	return 0;
+	int ret = 0;
+
+	if(timer_id != -1)
+	{
+		ret = close(timer_id);
+		timer_id = -1;
+	}
+	return ret;
 }
 int Timer::timer_modify_internal(double timer_internal) {
 	this->timer_internal = timer_internal;
-	timer_start();
+	return timer_start();
 }
 
 

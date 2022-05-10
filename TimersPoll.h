@@ -17,10 +17,10 @@ public:
 		active = 1;
 		epfd = epoll_create(max_num);
 	}
-	int timers_poll_add_timer(Timer &ptimer);
-	int timers_poll_del_timer(Timer &ptimer);
-	int loop();
-	int timers_poll_deactive() {
+	int timers_poll_add_timer(Timer *ptimer);
+	int timers_poll_del_timer(Timer *ptimer);
+	void loop();
+	void timers_poll_deactive() {
 		active = 0;
 	}
 	~ TimersPoll() {
@@ -28,7 +28,7 @@ public:
 private:
 	int epfd;
 	int active;
-	std::map<int, Timer> timers_map;
+	std::map<int, Timer*> timers_map;
 	/* data */
 };
 #endif /* TIMER_POLL_H */
